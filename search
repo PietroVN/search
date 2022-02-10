@@ -2,17 +2,28 @@
 # Requirements: sed
 # Author: PietroVN
 
-# Search 
-SEARCH=$@
-FIXED_SEARCH=$(sed 's/ /+/g' <<< ${SEARCH})
+# Usage:
+# search <MODE:>		<Title>
+# search YOUTUBE:"hollow knight ost"
+
+SEARCH_MODE=$@
 
 # Enviroment
 INVIDIOUS_INSTANCE="https://invidious.snopyta.org/"
 YOUTUBE="https://youtube.com/"
 MAX_VIDEOS=10
 
+# Tmp vars
+NUMBER=1
+TMP_VIDEOS="${XDG_RUNTIME_DIR}/tmp-videos.txt"
+TMP_VIDEO_TITLES="${XDG_RUNTIME_DIR}/tmp-video-titles.txt"
+
 # Youtube/Invidious specific code
 youtube() {
+	# Search
+	SEARCH=$(sed 's/YOUTUBE://g' <<< ${SEARCH_MODE})
+	FIXED_SEARCH=$(sed 's/ /+/g' <<< ${SEARCH})
+
 	# Url
 	URL="${INVIDIOUS_INSTANCE}search?q=${FIXED_SEARCH}"
 	VIDEO_LINK=$(curl -s ${URL} | grep -Eo "watch\?v=.{11}")
@@ -34,11 +45,6 @@ youtube() {
 
 	# Remove channels
 	FIXED_VIDEO_TITLE=$(sed 's/<b>.*//g' <<< ${FIXED_VIDEO_TITLE})
-
-	# Tmp vars
-	NUMBER=1
-	TMP_VIDEOS="${XDG_RUNTIME_DIR}/tmp-videos.txt"
-	TMP_VIDEO_TITLES="${XDG_RUNTIME_DIR}/tmp-video-titles.txt"
 
 	# Delete previous video list
 	[[ -f "${TMP_VIDEOS}" ]] && rm "${TMP_VIDEOS}"
@@ -90,8 +96,5 @@ youtube() {
 	done
 }
 
-# Watch
-#echo "Choose a video:"
-#read CHOOSE
-#mpv "https://youtube.com/$(cat  ${TMP_VIDEOS} | sed -n ${CHOOSE}p)"
-
+# 
+[[ ${SEARCH_MODE} == *"YOUTUBE:"* ]] && youtube
