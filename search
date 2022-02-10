@@ -1,0 +1,97 @@
+#!/bin/bash
+# Requirements: sed
+# Author: PietroVN
+
+# Search 
+SEARCH=$@
+FIXED_SEARCH=$(sed 's/ /+/g' <<< ${SEARCH})
+
+# Enviroment
+INVIDIOUS_INSTANCE="https://invidious.snopyta.org/"
+YOUTUBE="https://youtube.com/"
+MAX_VIDEOS=10
+
+# Youtube/Invidious specific code
+youtube() {
+	# Url
+	URL="${INVIDIOUS_INSTANCE}search?q=${FIXED_SEARCH}"
+	VIDEO_LINK=$(curl -s ${URL} | grep -Eo "watch\?v=.{11}")
+	VIDEO_TITLE=$(curl -s ${URL} | grep -i '<p dir="auto">')
+
+	# Fix video title
+	FIXED_VIDEO_TITLE=$(sed 's/ /_/g' <<< ${VIDEO_TITLE})
+	FIXED_VIDEO_TITLE=$(sed 's/+//g' <<< ${FIXED_VIDEO_TITLE})
+	FIXED_VIDEO_TITLE=$(sed 's/-//g' <<< ${FIXED_VIDEO_TITLE})
+	FIXED_VIDEO_TITLE=$(sed 's/<p_dir="auto">//g' <<< ${FIXED_VIDEO_TITLE})
+
+	# Fix special characters on video title
+	FIXED_VIDEO_TITLE=$(sed 's/amp;//g' <<< ${FIXED_VIDEO_TITLE}) # Fix &
+	FIXED_VIDEO_TITLE=$(sed 's/________________//g' <<< ${FIXED_VIDEO_TITLE}) # Fix multiple underline
+	FIXED_VIDEO_TITLE=$(sed 's/__/_/g' <<< ${FIXED_VIDEO_TITLE}) # Fix double underline
+	FIXED_VIDEO_TITLE=$(sed 's/<\/p>//g' <<< ${FIXED_VIDEO_TITLE})
+	FIXED_VIDEO_TITLE=$(sed 's/<\/b>//g' <<< ${FIXED_VIDEO_TITLE})
+	FIXED_VIDEO_TITLE=$(sed 's/【//g' <<< ${FIXED_VIDEO_TITLE})
+
+	# Remove channels
+	FIXED_VIDEO_TITLE=$(sed 's/<b>.*//g' <<< ${FIXED_VIDEO_TITLE})
+
+	# Tmp vars
+	NUMBER=1
+	TMP_VIDEOS="${XDG_RUNTIME_DIR}/tmp-videos.txt"
+	TMP_VIDEO_TITLES="${XDG_RUNTIME_DIR}/tmp-video-titles.txt"
+
+	# Delete previous video list
+	[[ -f "${TMP_VIDEOS}" ]] && rm "${TMP_VIDEOS}"
+	[[ -f "${TMP_VIDEO_TITLES}" ]] && rm "${TMP_VIDEO_TITLES}"
+
+	# Store urls
+	for f in ${VIDEO_LINK}; do
+		# Store videos
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${TMP_VIDEOS}
+
+		# Increase number
+		[[ ${f} != ${prev} ]] && NUMBER=$((NUMBER+1))
+
+		# Set current link as previous
+		prev=${f}
+
+		# Break
+		[[ ${NUMBER} -gt "${MAX_VIDEOS}" ]] && break
+	done
+
+	# Reset number
+	NUMBER=1
+
+	# Store titles
+	for f in ${FIXED_VIDEO_TITLE}; do
+		# Store video titles
+		[[ ${f} != ${prev} ]]  && echo "${f}" >> ${TMP_VIDEO_TITLES}
+
+		# Increase number
+		[[ ${f} != ${prev} ]] && NUMBER=$((NUMBER+1))
+
+		# Set previous
+		prev=${f}
+
+		# Break
+		[[ ${NUMBER} -gt "${MAX_VIDEOS}" ]] && break
+	done
+
+	# Reset number
+	NUMBER=1
+
+	# List videos
+	for f in $(cat ${TMP_VIDEO_TITLES}); do
+		# Show videos title
+		echo "${NUMBER} - ${f}"
+
+		# Increase number
+		NUMBER=$((${NUMBER}+1))
+	done
+}
+
+# Watch
+#echo "Choose a video:"
+#read CHOOSE
+#mpv "https://youtube.com/$(cat  ${TMP_VIDEOS} | sed -n ${CHOOSE}p)"
+
