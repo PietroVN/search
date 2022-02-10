@@ -4,4 +4,4 @@ in library format because I plan implementing on my other scripts
 
 Search is a work in progress
 
-Requirements: Sed
+Requirements: sed, curl
