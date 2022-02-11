@@ -42,6 +42,7 @@ youtube() {
 	FIXED_VIDEO_TITLE=$(sed 's/<\/p>//g' <<< ${FIXED_VIDEO_TITLE})
 	FIXED_VIDEO_TITLE=$(sed 's/<\/b>//g' <<< ${FIXED_VIDEO_TITLE})
 	FIXED_VIDEO_TITLE=$(sed 's/【//g' <<< ${FIXED_VIDEO_TITLE})
+	FIXED_VIDEO_TITLE=$(sed 's/&quot;//g' <<< ${FIXED_VIDEO_TITLE} <<< ${FIXED_VIDEO_TITLE})
 
 	# Remove channels
 	FIXED_VIDEO_TITLE=$(sed 's/<b>.*//g' <<< ${FIXED_VIDEO_TITLE})
