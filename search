@@ -6,96 +6,96 @@
 # search <MODE:>		<Title>
 # search YOUTUBE:"hollow knight ost"
 
-SEARCH_MODE=$@
+search_mode=$@
 
 # Enviroment
-INVIDIOUS_INSTANCE="https://invidious.snopyta.org/"
-YOUTUBE="https://youtube.com/"
-MAX_VIDEOS=10
+invidious_instance="https://invidious.snopyta.org/"
+youtube="https://youtube.com/"
+max_videos=10
 
 # Tmp vars
-NUMBER=1
-TMP_VIDEOS="${XDG_RUNTIME_DIR}/tmp-videos.txt"
-TMP_VIDEO_TITLES="${XDG_RUNTIME_DIR}/tmp-video-titles.txt"
+number=1
+tmp_videos="${XDG_RUNTIME_DIR}/tmp-videos.txt"
+tmp_video_titles="${XDG_RUNTIME_DIR}/tmp-video-titles.txt"
 
 # Youtube/Invidious specific code
 youtube() {
 	# Search
-	SEARCH=$(sed 's/YOUTUBE://g' <<< ${SEARCH_MODE})
-	FIXED_SEARCH=$(sed 's/ /+/g' <<< ${SEARCH})
+	search=$(sed 's/YOUTUBE://g' <<< ${search_mode})
+	fixed_search=$(sed 's/ /+/g' <<< ${search})
 
 	# Url
-	URL="${INVIDIOUS_INSTANCE}search?q=${FIXED_SEARCH}"
-	VIDEO_LINK=$(curl -s ${URL} | grep -Eo "watch\?v=.{11}")
-	VIDEO_TITLE=$(curl -s ${URL} | grep -i '<p dir="auto">')
+	url="${invidious_instance}search?q=${fixed_search}"
+	video_url=$(curl -s ${url} | grep -Eo "watch\?v=.{11}")
+	video_title=$(curl -s ${url} | grep -i '<p dir="auto">')
 
 	# Fix video title
-	FIXED_VIDEO_TITLE=$(sed 's/ /_/g' <<< ${VIDEO_TITLE})
-	FIXED_VIDEO_TITLE=$(sed 's/+//g' <<< ${FIXED_VIDEO_TITLE})
-	FIXED_VIDEO_TITLE=$(sed 's/-//g' <<< ${FIXED_VIDEO_TITLE})
-	FIXED_VIDEO_TITLE=$(sed 's/<p_dir="auto">//g' <<< ${FIXED_VIDEO_TITLE})
+	fixed_video_title=$(sed 's/ /_/g' <<< ${video_title})
+	fixed_video_title=$(sed 's/+//g' <<< ${fixed_video_title})
+	fixed_video_title=$(sed 's/-//g' <<< ${fixed_video_title})
+	fixed_video_title=$(sed 's/<p_dir="auto">//g' <<< ${fixed_video_title})
 
 	# Fix special characters on video title
-	FIXED_VIDEO_TITLE=$(sed 's/amp;//g' <<< ${FIXED_VIDEO_TITLE}) # Fix &
-	FIXED_VIDEO_TITLE=$(sed 's/________________//g' <<< ${FIXED_VIDEO_TITLE}) # Fix multiple underline
-	FIXED_VIDEO_TITLE=$(sed 's/__/_/g' <<< ${FIXED_VIDEO_TITLE}) # Fix double underline
-	FIXED_VIDEO_TITLE=$(sed 's/<\/p>//g' <<< ${FIXED_VIDEO_TITLE})
-	FIXED_VIDEO_TITLE=$(sed 's/<\/b>//g' <<< ${FIXED_VIDEO_TITLE})
-	FIXED_VIDEO_TITLE=$(sed 's/【//g' <<< ${FIXED_VIDEO_TITLE})
-	FIXED_VIDEO_TITLE=$(sed 's/&quot;//g' <<< ${FIXED_VIDEO_TITLE} <<< ${FIXED_VIDEO_TITLE})
+	fixed_video_title=$(sed 's/amp;//g' <<< ${fixed_video_tile}) # Fix &
+	fixed_video_title=$(sed 's/________________//g' <<< ${fixed_video_title}) # Fix multiple underline
+	fixed_video_title=$(sed 's/__/_/g' <<< ${fixed_video_title}) # Fix double underline
+	fixed_video_title=$(sed 's/<\/p>//g' <<< ${fixed_video_title})
+	fixed_video_title=$(sed 's/<\/b>//g' <<< ${fixed_video_title})
+	fixed_video_title=$(sed 's/【//g' <<< ${fixed_video_title})
+	fixed_video_title=$(sed 's/&quot;//g' <<< ${fixed_video_title} <<< ${fixed_video_title})
 
 	# Remove channels
-	FIXED_VIDEO_TITLE=$(sed 's/<b>.*//g' <<< ${FIXED_VIDEO_TITLE})
+	fixed_video_title=$(sed 's/<b>.*//g' <<< ${fixed_video_title})
 
 	# Delete previous video list
-	[[ -f "${TMP_VIDEOS}" ]] && rm "${TMP_VIDEOS}"
-	[[ -f "${TMP_VIDEO_TITLES}" ]] && rm "${TMP_VIDEO_TITLES}"
+	[[ -f "${tmp_videos}" ]] && rm "${tmp_videos}"
+	[[ -f "${tmp_video_titles}" ]] && rm "${tmp_video_titles}"
 
 	# Store urls
-	for f in ${VIDEO_LINK}; do
+	for f in ${video_url}; do
 		# Store videos
-		[[ ${f} != ${prev} ]] && echo "${f}" >> ${TMP_VIDEOS}
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_videos}
 
 		# Increase number
-		[[ ${f} != ${prev} ]] && NUMBER=$((NUMBER+1))
+		[[ ${f} != ${prev} ]] && number=$((number+1))
 
 		# Set current link as previous
 		prev=${f}
 
 		# Break
-		[[ ${NUMBER} -gt "${MAX_VIDEOS}" ]] && break
+		[[ ${number} -gt "${max_videos}" ]] && break
 	done
 
 	# Reset number
-	NUMBER=1
+	number=1
 
 	# Store titles
-	for f in ${FIXED_VIDEO_TITLE}; do
+	for f in ${fixed_video_title}; do
 		# Store video titles
-		[[ ${f} != ${prev} ]]  && echo "${f}" >> ${TMP_VIDEO_TITLES}
+		[[ ${f} != ${prev} ]]  && echo "${f}" >> ${tmp_video_titles}
 
 		# Increase number
-		[[ ${f} != ${prev} ]] && NUMBER=$((NUMBER+1))
+		[[ ${f} != ${prev} ]] && number=$((number+1))
 
 		# Set previous
 		prev=${f}
 
 		# Break
-		[[ ${NUMBER} -gt "${MAX_VIDEOS}" ]] && break
+		[[ ${number} -gt "${max_videos}" ]] && break
 	done
 
 	# Reset number
-	NUMBER=1
+	number=1
 
 	# List videos
-	for f in $(cat ${TMP_VIDEO_TITLES}); do
+	for f in $(cat ${tmp_video_titles}); do
 		# Show videos title
-		echo "${NUMBER} - ${f}"
+		echo "${number} - ${f}"
 
 		# Increase number
-		NUMBER=$((${NUMBER}+1))
+		NUMBER=$((${number}+1))
 	done
 }
 
-# 
-[[ ${SEARCH_MODE} == *"YOUTUBE:"* ]] && youtube
+# Search modes
+[[ ${search_mode} == *"youtube:"* ]] && youtube
