@@ -4,24 +4,24 @@
 
 # Usage:
 # search <MODE:>		<Title>
-# search YOUTUBE:"hollow knight ost"
+# search youtube:"hollow knight ost"
 
 search_mode=$@
 
 # Enviroment
 invidious_instance="https://invidious.snopyta.org/"
-youtube="https://youtube.com/"
+youtube_url="https://youtube.com/"
 max_videos=10
 
 # Tmp vars
 number=1
-tmp_videos="${XDG_RUNTIME_DIR}/tmp-videos.txt"
-tmp_video_titles="${XDG_RUNTIME_DIR}/tmp-video-titles.txt"
+tmp_videos="${XDG_RUNTIME_DIR}/tmp_videos.txt"
+tmp_video_titles="${XDG_RUNTIME_DIR}/tmp_video_titles.txt"
 
 # Youtube/Invidious specific code
 youtube() {
 	# Search
-	search=$(sed 's/YOUTUBE://g' <<< ${search_mode})
+	search=$(sed 's/youtube://g' <<< ${search_mode})
 	fixed_search=$(sed 's/ /+/g' <<< ${search})
 
 	# Url
@@ -36,13 +36,13 @@ youtube() {
 	fixed_video_title=$(sed 's/<p_dir="auto">//g' <<< ${fixed_video_title})
 
 	# Fix special characters on video title
-	fixed_video_title=$(sed 's/amp;//g' <<< ${fixed_video_tile}) # Fix &
+	fixed_video_title=$(sed 's/amp;//g' <<< ${fixed_video_title}) # Fix &
 	fixed_video_title=$(sed 's/________________//g' <<< ${fixed_video_title}) # Fix multiple underline
 	fixed_video_title=$(sed 's/__/_/g' <<< ${fixed_video_title}) # Fix double underline
 	fixed_video_title=$(sed 's/<\/p>//g' <<< ${fixed_video_title})
 	fixed_video_title=$(sed 's/<\/b>//g' <<< ${fixed_video_title})
 	fixed_video_title=$(sed 's/【//g' <<< ${fixed_video_title})
-	fixed_video_title=$(sed 's/&quot;//g' <<< ${fixed_video_title} <<< ${fixed_video_title})
+	fixed_video_title=$(sed 's/&quot;//g' <<< ${fixed_video_title})
 
 	# Remove channels
 	fixed_video_title=$(sed 's/<b>.*//g' <<< ${fixed_video_title})
@@ -72,7 +72,7 @@ youtube() {
 	# Store titles
 	for f in ${fixed_video_title}; do
 		# Store video titles
-		[[ ${f} != ${prev} ]]  && echo "${f}" >> ${tmp_video_titles}
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_video_titles}
 
 		# Increase number
 		[[ ${f} != ${prev} ]] && number=$((number+1))
@@ -93,7 +93,7 @@ youtube() {
 		echo "${number} - ${f}"
 
 		# Increase number
-		NUMBER=$((${number}+1))
+		number=$((${number}+1))
 	done
 }
 
