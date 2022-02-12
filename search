@@ -261,7 +261,7 @@ _animefire() {
 		prev=${f}
 
 		# Break
-		[[ ${number} -gt "${max_videos}" ]] && break
+		#[[ ${number} -gt "${max_videos}" ]] && break
 	done
 
 	# Reset number
@@ -279,7 +279,7 @@ _animefire() {
 		prev=${f}
 
 		# Break
-		[[ ${number} -gt "${max_videos}" ]] && break
+		#[[ ${number} -gt "${max_videos}" ]] && break
 	done
 
 	# Reset number
@@ -326,7 +326,7 @@ _animefire() {
 		prev=${f}
 
 		# Break
-		[[ ${number} -gt "${max_videos}" ]] && break
+		#[[ ${number} -gt "${max_videos}" ]] && break
 	done
 
 	# Reset number
@@ -344,7 +344,7 @@ _animefire() {
 		prev=${f}
 
 		# Break
-		[[ ${number} -gt "${max_videos}" ]] && break
+		#[[ ${number} -gt "${max_videos}" ]] && break
 	done
 
 	# Reset number
