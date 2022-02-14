@@ -2,6 +2,6 @@
 A "library" for searching videos and animes(I plan adding support), I made it 
 in library format because I plan implementing on my other scripts
 
-Search is a work in progress
+Features: minimal, minimal dependencies, easy to implement site support
 
 Requirements: sed, curl
