@@ -287,7 +287,7 @@ _animefire_search_anime() {
 	echo "$(cat ${tmp_anime_titles_list} | sed -n ${choosen_anime}p)" > ${tmp_selected_anime_path}
 
 	# Save utilised anime provider
-	echo "animefire" >> ${tmp_animes_dir}
+	echo "animefire" >> ${tmp_animes_list}
 }
 
 _animefire_choose_episode() {	
