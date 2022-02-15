@@ -296,7 +296,7 @@ _animefire_choose_episode() {
 
 	# Get links
 	url=$(cat ${tmp_animes_list} | sed -n ${choosen_anime}p)
-	anime_url=$(curl -s ${url} | grep -i 'title' | grep -Eo "${animefire_url}.{5}/")
+	anime_url=$(curl -s ${url} | grep -Eo "${animefire_url}.{5}/")
 	anime_title=$(curl -s ${url} | grep -Eo "Episódio .{0,3}<")
 	
 	# Fix anime title
