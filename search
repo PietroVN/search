@@ -16,14 +16,14 @@ animefire_url="https://animefire.online/"
 max_videos=10
 
 # Anime specific
-tmp_selected_anime_dir="${XDG_RUNTIME_DIR}/tmp_selected_anime.txt"
-tmp_animes_dir="${XDG_RUNTIME_DIR}/tmp_animes.txt"
-tmp_anime_titles_dir="${XDG_RUNTIME_DIR}/tmp_anime_titles.txt"
+tmp_selected_anime_path="${XDG_RUNTIME_DIR}/tmp_selected_anime.txt"
+tmp_animes_list="${XDG_RUNTIME_DIR}/tmp_animes_list.txt"
+tmp_anime_titles_list="${XDG_RUNTIME_DIR}/tmp_anime_titles_list.txt"
 
 # Tmp vars
 number=1
-tmp_videos_dir="${XDG_RUNTIME_DIR}/tmp_videos.txt"
-tmp_video_titles_dir="${XDG_RUNTIME_DIR}/tmp_video_titles.txt"
+tmp_videos_list="${XDG_RUNTIME_DIR}/tmp_videos_list.txt"
+tmp_video_titles_list="${XDG_RUNTIME_DIR}/tmp_video_titles_list.txt"
 
 # Youtube/Invidious specific code
 _youtube() {
@@ -56,13 +56,13 @@ _youtube() {
 	fixed_video_title=$(sed 's/<b>.*//g' <<< ${fixed_video_title})
 
 	# Delete previous video list
-	[[ -f "${tmp_videos_dir}" ]] && rm "${tmp_videos_dir}"
-	[[ -f "${tmp_video_titles_dir}" ]] && rm "${tmp_video_titles_dir}"
+	[[ -f "${tmp_videos_list}" ]] && rm "${tmp_videos_list}"
+	[[ -f "${tmp_video_titles_list}" ]] && rm "${tmp_video_titles_list}"
 
 	# Store urls
 	for f in ${video_url}; do
 		# Store videos
-		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_videos_dir}
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_videos_list}
 
 		# Increase number
 		[[ ${f} != ${prev} ]] && number=$((number+1))
@@ -80,7 +80,10 @@ _youtube() {
 	# Store titles
 	for f in ${fixed_video_title}; do
 		# Store video titles
-		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_video_titles_dir}
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_video_titles_list}
+
+		# Show videos title
+		[[ ${f} != ${prev} ]] && echo "${number} - ${f}"
 
 		# Increase number
 		[[ ${f} != ${prev} ]] && number=$((number+1))
@@ -91,21 +94,9 @@ _youtube() {
 		# Break
 		[[ ${number} -gt "${max_videos}" ]] && break
 	done
-
-	# Reset number
-	number=1
-
-	# List videos
-	for f in $(cat ${tmp_video_titles_dir}); do
-		# Show videos title
-		echo "${number} - ${f}"
-
-		# Increase number
-		number=$((${number}+1))
-	done
 }
 
-_anitube() {
+_anitube() { # Actualy broken
 	# Search
 	search=$(sed 's/_anime://g' <<< ${search_mode})
 	fixed_search=$(sed 's/ /+/g' <<< ${search})
@@ -251,13 +242,13 @@ _animefire_search_anime() {
 	fixed_anime_title=$(sed 's/<\/h2>//g' <<< ${fixed_anime_title})
 
 	# Delete previous video list
-	[[ -f "${tmp_animes_dir}" ]] && rm "${tmp_animes_dir}"
-	[[ -f "${tmp_anime_titles_dir}" ]] && rm "${tmp_anime_titles_dir}"
+	[[ -f "${tmp_animes_list}" ]] && rm "${tmp_animes_list}"
+	[[ -f "${tmp_anime_titles_list}" ]] && rm "${tmp_anime_titles_list}"
 
 	# Store urls
 	for f in ${anime_url}; do
 		# Store videos
-		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_animes_dir}
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_animes_list}
 
 		# Increase number
 		[[ ${f} != ${prev} ]] && number=$((number+1))
@@ -272,7 +263,10 @@ _animefire_search_anime() {
 	# Store titles
 	for f in ${fixed_anime_title}; do
 		# Store video titles
-		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_anime_titles_dir}
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_anime_titles_list}
+
+		# Show anime title
+		[[ ${f} != ${prev} ]] && echo "${number} - ${f}"
 
 		# Increase number
 		[[ ${f} != ${prev} ]] && number=$((number+1))
@@ -284,22 +278,13 @@ _animefire_search_anime() {
 	# Reset number
 	number=1
 
-	# List animes
-	for f in $(cat ${tmp_anime_titles_dir}); do
-		# Show videos title
-		echo "${number} - ${f}"
-
-		# Increase number
-		number=$((${number}+1))
-	done
-
 	# Ask user to choose a anime
 	echo ""
 	echo "Enter your choice: "
 	read choosen_anime
 
-	# Save choosen anime name (video-cli
-	echo "$(cat ${tmp_anime_titles_dir} | sed -n ${choosen_anime}p)" > ${tmp_selected_anime_dir}
+	# Save choosen anime name
+	echo "$(cat ${tmp_anime_titles_list} | sed -n ${choosen_anime}p)" > ${tmp_selected_anime_path}
 
 	# Save utilised anime provider
 	echo "animefire" >> ${tmp_animes_dir}
@@ -310,7 +295,7 @@ _animefire_choose_episode() {
 	number=0
 
 	# Get links
-	url=$(cat ${tmp_animes_dir} | sed -n ${choosen_anime}p)
+	url=$(cat ${tmp_animes_list} | sed -n ${choosen_anime}p)
 	anime_url=$(curl -s ${url} | grep -i 'title' | grep -Eo "${animefire_url}.{5}/")
 	anime_title=$(curl -s ${url} | grep -Eo "Episódio .{0,3}<")
 	
@@ -319,13 +304,13 @@ _animefire_choose_episode() {
 	fixed_anime_title=$(sed 's/<//g' <<< ${fixed_anime_title})
 
 	# Delete previous video list | so we can reutilise the old variables
-	[[ -f "${tmp_animes_dir}" ]] && rm "${tmp_animes_dir}"
-	[[ -f "${tmp_anime_titles_dir}" ]] && rm "${tmp_anime_titles_dir}"
+	[[ -f "${tmp_animes_dir}" ]] && rm "${tmp_animes_list}"
+	[[ -f "${tmp_anime_titles_dir}" ]] && rm "${tmp_anime_titles_list}"
 
 	# Store urls
 	for f in ${anime_url}; do
 		# Store animes
-		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_animes_dir}
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_animes_list}
 
 		# Increase number
 		[[ ${f} != ${prev} ]] && number=$((number+1))
@@ -340,7 +325,10 @@ _animefire_choose_episode() {
 	# Store titles
 	for f in ${fixed_anime_title}; do
 		# Store anime titles
-		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_anime_titles_dir}
+		[[ ${f} != ${prev} ]] && echo "${f}" >> ${tmp_anime_titles_list}
+
+		# Show episode list
+		[[ ${f} != ${prev} ]] && echo "${number} - ${f}"
 
 		# Increase number
 		[[ ${f} != ${prev} ]] && number=$((number+1))
@@ -351,16 +339,6 @@ _animefire_choose_episode() {
 
 	# Reset number
 	number=1
-
-	# List episodes
-	for f in $(cat ${tmp_anime_titles_dir}); do
-		# Show videos title
-		echo "${number} - ${f}"
-
-		# Increase number
-		number=$((${number}+1))
-	done
-
 }
 
 # Search mode
