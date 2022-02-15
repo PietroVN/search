@@ -3,8 +3,8 @@
 # Author: PietroVN
 
 # Usage:
-# search <MODE:>		<Title>
-# search youtube:"hollow knight ost"
+# search anime:<anime name>
+# search youtube:<video name>
 
 search_mode=$@
 
@@ -304,8 +304,8 @@ _animefire_choose_episode() {
 	fixed_anime_title=$(sed 's/<//g' <<< ${fixed_anime_title})
 
 	# Delete previous video list | so we can reutilise the old variables
-	[[ -f "${tmp_animes_dir}" ]] && rm "${tmp_animes_list}"
-	[[ -f "${tmp_anime_titles_dir}" ]] && rm "${tmp_anime_titles_list}"
+	[[ -f "${tmp_animes_list}" ]] && rm "${tmp_animes_list}"
+	[[ -f "${tmp_anime_titles_list}" ]] && rm "${tmp_anime_titles_list}"
 
 	# Store urls
 	for f in ${anime_url}; do
@@ -356,7 +356,7 @@ case ${search_mode} in
 		[[ ${provider} -eq "1" ]] && _animefire_search_anime
 	;;
 	*"_choose_anime_episode"*)
-		[[ $(tail -n1 ${tmp_animes_dir}) == "animefire" ]] && _animefire_choose_episode
+		[[ $(tail -n1 ${tmp_animes_list}) == "animefire" ]] && _animefire_choose_episode
 
 	;;
 esac
