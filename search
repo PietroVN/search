@@ -303,8 +303,8 @@ _animefire_choose_episode() {
 	# Get links
 	choosen_anime=$(tail -n2 ${tmp_animes_list} | sed -n 1p)
 	url=$(cat ${tmp_animes_list} | sed -n ${choosen_anime}p)
-	anime_url=$(curl ${url}  |  grep -Eo "${animefire_url}.{5}/")
-	anime_title=$(curl ${url} | grep -E "${animefire_url}.{5}/" | grep -Eo "Episódio .{1,3}")
+	anime_url=$(curl -s ${url}  |  grep -Eo "${animefire_url}.{5}/")
+	anime_title=$(curl -s ${url} | grep -E "${animefire_url}.{5}/" | grep -Eo "Episódio .{1,3}")
 
 	# Fix anime title
 	fixed_anime_title=$(sed 's/ /_/g' <<< ${anime_title})
