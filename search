@@ -289,6 +289,9 @@ _animefire_search_anime() {
 	# Save choosen anime name
 	cat "$tmp_anime_titles_list" | sed -n "$choosen_anime"p > "$tmp_selected_anime_path"
 
+	# Save choosen anime number
+	echo "$choosen_anime" >> "$tmp_animes_list"
+
 	# Save utilized anime provider
 	echo "animefire" >> "$tmp_animes_list"
 }
@@ -298,10 +301,11 @@ _animefire_choose_episode() {
 	number=0
 
 	# Get links
-	url=$(cat "$tmp_animes_list" | sed -n "$choosen_anime"p)
-	anime_url=$(curl -s "$url" | grep -Eo "${animefire_url}.{5}/")
-	anime_title=$(curl -s "$url" | grep -Eo "Episódio .{0,3}<")
-	
+	choosen_anime=$(tail -n2 $tmp_animes_list | sed -n 1p)
+	url=$(cat $tmp_animes_list | sed -n "$choosen_anime"p)
+	anime_url=$(curl -s "$url"  |  grep -Eo "${animefire_url}.{5}/")
+	anime_title=$(curl -s "$url" | grep -E "${animefire_url}.{5}/" | grep -Eo "Episódio .{1,3}")
+
 	# Fix anime title
 	fixed_anime_title=$(sed 's/ /_/g' <<< "$anime_title")
 	fixed_anime_title=$(sed 's/<//g' <<< "$fixed_anime_title")
@@ -337,7 +341,7 @@ _animefire_choose_episode() {
 		[[ "$f" != "$prev" ]] && echo "$number - $f"
 
 		# Increase number
-		[[ "$f" != "$prev" ]] && number=$((number.+ 1))
+		[[ "$f" != "$prev" ]] && number=$((number + 1))
 
 		# Set previous
 		prev=$f
