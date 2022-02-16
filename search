@@ -260,6 +260,9 @@ _animefire_search_anime() {
 	# Reset number
 	number=1
 
+	# Title
+	echo "Animes:"
+
 	# Store titles
 	for f in ${fixed_anime_title}; do
 		# Store video titles
@@ -322,6 +325,9 @@ _animefire_choose_episode() {
 	# Reset number
 	number=1
 
+	# Title
+	echo "Episodes:"
+
 	# Store titles
 	for f in ${fixed_anime_title}; do
 		# Store anime titles
@@ -347,16 +353,15 @@ case ${search_mode} in
 		_youtube
 	;;
 	*"_anime:"*)
-		echo ""
+		echo "Sites:"
 		echo "1 - Animefire (pt_BR)"
 		echo ""
-		echo "Enter your choice"
+		echo "Enter your choice:"
 		read provider
 
 		[[ ${provider} -eq "1" ]] && _animefire_search_anime
 	;;
 	*"_choose_anime_episode"*)
 		[[ $(tail -n1 ${tmp_animes_list}) == "animefire" ]] && _animefire_choose_episode
-
 	;;
 esac
