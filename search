@@ -181,7 +181,7 @@ _anitube() { # Actualy broken
 	# Store urls
 	for f in $video_url; do
 		# Store videos
-		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_videod"
+		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_videos"
 
 		# Increase number
 		[[ "$f" != "$prev" ]] && number=$((number + 1))
