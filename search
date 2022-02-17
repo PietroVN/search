@@ -240,6 +240,7 @@ _animefire_search_anime() {
 	fixed_anime_title=$(sed 's/<h2_class=//g' <<< "$fixed_anime_title")
 	fixed_anime_title=$(sed 's/"aniTitulo">//g' <<< "$fixed_anime_title")
 	fixed_anime_title=$(sed 's/<\/h2>//g' <<< "$fixed_anime_title")
+	fixed_anime_title=$(sed 's/\///g' <<< ${fixed_anime_title})
 
 	# Delete previous video list
 	[[ -f "$tmp_animes_list" ]] && rm "$tmp_animes_list"
