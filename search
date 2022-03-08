@@ -80,6 +80,9 @@ _youtube() {
 
 	# Store titles
 	for f in $fixed_video_title; do
+		# Substitute _ with space
+		f="$(sed 's/_/ /g' <<< "$f")"
+
 		# Store video titles
 		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_video_titles_list"
 
@@ -138,6 +141,9 @@ _animefire_search_anime() {
 
 	# Store titles
 	for f in $fixed_anime_title; do
+		# Substitute _ with space
+		f="$(sed 's/_/ /g' <<< "$f")"
+
 		# Store video titles
 		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_titles_list"
 
@@ -207,6 +213,9 @@ _animefire_choose_episode() {
 
 	# Store titles
 	for f in $fixed_anime_title; do
+		# Substitute _ with space
+		f="$(sed 's/_/ /g' <<< "$f")"
+
 		# Store anime titles
 		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_titles_list"
 
