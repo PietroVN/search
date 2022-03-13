@@ -9,7 +9,7 @@
 search_mode=$@
 
 # Enviroment
-invidious_instance="https://invidious.snopyta.org/"
+invidious_instance="https://vid.puffyan.us/"
 youtube_url="https://youtube.com/"
 anitube_url="https://www.anitube.site/"
 animefire_url="https://animefire.online/"
