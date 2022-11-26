@@ -1,38 +1,43 @@
-#!/bin/bash
-# Requirements: sed, curl
-# Author: PietroVN
+#!/usr/bin/env bash
+####################################################
+# Requirements: sed, curl			   #
+# Author: Waltz					   #
+####################################################
+# Usage:					   #
+# search anime:<anime name>			   #
+# search youtube:<video name>			   #
+####################################################
 
-# Usage:
-# search anime:<anime name>
-# search youtube:<video name>
 
-search_mode=$@
+# Script or user will input a value
+mode=$@
 
 # Enviroment
-invidious_instance="https://vid.puffyan.us/"
-youtube_url="https://youtube.com/"
-anitube_url="https://www.anitube.site/"
-animefire_url="https://animefire.online/"
-max_videos=10
+inv_instance="https://vid.puffyan.us/"		# We get YouTube video ids here
+yt_url="https://youtube.com/"			# Append this to the video id
+animefire_url="https://animefire.online/"	# pt_BR anime host
+betteranime_url="https://betteranime.net"	# pt_BR anime host
+max_videos=10					# Max videos/anime that will be shown at the same time on the screen
 
 # Anime specific
-tmp_selected_anime_path="$XDG_RUNTIME_DIR/tmp_selected_anime.txt"
-tmp_animes_list="$XDG_RUNTIME_DIR/tmp_animes_list.txt"
-tmp_anime_titles_list="$XDG_RUNTIME_DIR/tmp_anime_titles_list.txt"
+tmp_selected_anime_path="$XDG_RUNTIME_DIR/selected_anime.txt"
+tmp_anime_list="$XDG_RUNTIME_DIR/anime_list.txt"
+tmp_anime_titles_list="$XDG_RUNTIME_DIR/anime_titles_list.txt"
 
 # Tmp vars
 number=1
-tmp_videos_list="$XDG_RUNTIME_DIR/tmp_videos_list.txt"
-tmp_video_titles_list="$XDG_RUNTIME_DIR/tmp_video_titles_list.txt"
+tmp_video_list="$XDG_RUNTIME_DIR/video_list.txt"
+tmp_video_titles_list="$XDG_RUNTIME_DIR/video_titles_list.txt"
 
 # Youtube/Invidious specific code
 _youtube() {
+
 	# Search
-	search="$(sed 's/_youtube://g' <<< "$search_mode")"
+	search="$(sed 's/_youtube://g' <<< "$mode")"
 	fixed_search="$(sed 's/ /+/g' <<< "$search")"
 
 	# Url
-	url="${invidious_instance}search?q=$fixed_search"
+	url=""$inv_instance"search?q="$fixed_search""
 	video_url="$(curl -s "$url" | grep -Eo "watch\?v=.{11}")"
 	video_title="$(curl -s "$url" | grep -i '<p dir="auto">')"
 
@@ -57,13 +62,13 @@ _youtube() {
 	fixed_video_title="$(sed 's/<b>.*//g' <<< "$fixed_video_title")"
 
 	# Delete previous video list
-	[[ -f "$tmp_videos_list" ]] && rm "$tmp_videos_list"
+	[[ -f "$tmp_video_list" ]] && rm "$tmp_video_list"
 	[[ -f "$tmp_video_titles_list" ]] && rm "$tmp_video_titles_list"
 
 	# Store urls
 	for f in $video_url; do
 		# Store videos
-		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_videos_list"
+		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_video_list"
 
 		# Increase number
 		[[ "$f" != "$prev" ]] && number="$((number + 1))"
@@ -76,11 +81,11 @@ _youtube() {
 	done
 
 	# Reset number
-	number="1"
+	number=1
 
 	# Store titles
 	for f in $fixed_video_title; do
-		# Substitute _ with space
+		# Replace _ with space
 		f="$(sed 's/_/ /g' <<< "$f")"
 
 		# Store video titles
@@ -101,30 +106,29 @@ _youtube() {
 }
 
 _animefire_search_anime() {
+
 	# Search
-	search="$(sed 's/_anime://g' <<< "$search_mode")"
+	search="$(sed 's/_anime://g' <<< "$mode")"
 	fixed_search="$(sed 's/ /+/g' <<< "$search")"
 
 	# Url
 	url="${animefire_url}?s=${fixed_search}"
-	anime_url="$(curl -s "$url" | grep -Eo "${animefire_url}.{5}/")"
+	anime_url="$(curl -s "$url" | grep -Eo "$animefire_url.{5}/")"
 	anime_title="$(curl -s "$url" | grep -i 'aniTitulo')"
-	
-	# Fix video title
-	fixed_anime_title="$(sed 's/ /_/g' <<< "$anime_title")"
-	fixed_anime_title="$(sed 's/<h2_class=//g' <<< "$fixed_anime_title")"
-	fixed_anime_title="$(sed 's/"aniTitulo">//g' <<< "$fixed_anime_title")"
+
+	# Fix anime title
+	fixed_anime_title="$(sed 's/<h2 class="aniTitulo tWrap">//g' <<< "$anime_title")"
 	fixed_anime_title="$(sed 's/<\/h2>//g' <<< "$fixed_anime_title")"
-	fixed_anime_title="$(sed 's/\///g' <<< ${fixed_anime_title})"
+	fixed_anime_title="$(sed 's/ /_/g' <<< "$fixed_anime_title")"
 
 	# Delete previous video list
-	[[ -f "$tmp_animes_list" ]] && rm "$tmp_animes_list"
+	[[ -f "$tmp_anime_list" ]] && rm "$tmp_anime_list"
 	[[ -f "$tmp_anime_titles_list" ]] && rm "$tmp_anime_titles_list"
 
 	# Store urls
 	for f in $anime_url; do
 		# Store videos
-		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_animes_list"
+		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_list"
 
 		# Increase number
 		[[ "$f" != "$prev" ]] && number="$((number + 1))"
@@ -137,18 +141,19 @@ _animefire_search_anime() {
 	number=1
 
 	# Title
-	echo "Animes:"
+	echo "Anime:"
 
 	# Store titles
 	for f in $fixed_anime_title; do
 		# Substitute _ with space
-		f="$(sed 's/_/ /g' <<< "$f")"
+		_f="$(sed 's/_/ /g' <<< "$f")"
 
 		# Store video titles
 		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_titles_list"
 
 		# Show anime title
-		[[ "$f" != "$prev" ]] && echo "$number - $f"
+		[[ "$f" != "$prev" ]] && echo "$number - $_f"
+
 
 		# Increase number
 		[[ "$f" != "$prev" ]] && number="$((number + 1))"
@@ -158,45 +163,127 @@ _animefire_search_anime() {
 	done
 
 	# Reset number
-	number="1"
+	number=1
 
 	# Ask user to choose a anime
 	echo ""
 	echo "Enter your choice: "
 	read -r choosen_anime
-	
+
 	# Save choosen anime name
 	cat "$tmp_anime_titles_list" | sed -n "$choosen_anime"p > "$tmp_selected_anime_path"
 
 	# Save choosen anime number
-	echo "$choosen_anime" >> "$tmp_animes_list"
+	echo "$choosen_anime" >> "$tmp_anime_list"
 
 	# Save utilized anime provider
-	echo "animefire" >> "$tmp_animes_list"
+	echo "animefire" >> "$tmp_anime_list"
 }
 
-_animefire_choose_episode() {	
+_better_anime_search_anime() {
+
+       	# Search
+        search="$(sed 's/_anime://g' <<< "$mode")"
+        fixed_search="$(sed 's/ /+/g' <<< "$search")"
+        fixed_url="$(sed 's/ /-/g' <<< "$search")"
+
+       	# Url
+        url="${betteranime_url}/pesquisa?titulo=$fixed_search"
+        anime_url="$(curl -s "$url" | grep -i  "$betteranime_url/anime/")"
+        anime_title="$(curl -s "$url" | grep -i 'title=\"' | grep -iv 'Anime Aleatório')"
+
+	# Fix anime url (lol)
+	fixed_anime_url="$(sed 's/\<a href//g' <<< "$anime_url")"
+	fixed_anime_url="$(sed 's/<=\"//g' <<< "$fixed_anime_url")"
+	fixed_anime_url="$(sed 's/\"//g' <<< "$fixed_anime_url")"
+
+       	# Fix anime title
+	fixed_anime_title="$(sed 's/title=\"//g' <<< "$anime_title")"
+	fixed_anime_title="$(sed 's/                       //g' <<< "$fixed_anime_title")"
+	fixed_anime_title="$(sed 's/\">//g' <<< "$fixed_anime_title")"
+        fixed_anime_title="$(sed 's/ /_/g' <<< "$fixed_anime_title")"
+
+       	# Delete previous video list
+        [[ -f "$tmp_anime_list" ]] && rm "$tmp_anime_list"
+        [[ -f "$tmp_anime_titles_list" ]] && rm "$tmp_anime_titles_list"
+
+       	# Store urls
+        for f in $fixed_anime_url; do
+                # Store videos
+                [[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_list"
+
+                # Increase number
+                [[ "$f" != "$prev" ]] && number="$((number + 1))"
+
+                # Set current link as previous
+                prev="$f"
+        done
+
+       	# Reset number
+        number=1
+
+ 	# Title
+        echo "Anime:"
+
+       	# Store titles
+        for f in $fixed_anime_title; do
+                # Substitute _ with space
+                _f="$(sed 's/_/ /g' <<< "$f")"
+
+                # Store video titles
+                [[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_titles_list"
+
+                # Show anime title
+                [[ "$f" != "$prev" ]] && echo "$number - $_f"
+
+                # Increase number
+                [[ "$f" != "$prev" ]] && number="$((number + 1))"
+
+                # Set previous
+                prev="$f"
+        done
+
+       	# Reset number
+        number=1
+
+       	# Ask user to choose a anime
+        echo ""
+        echo "Enter your choice: "
+        read -r choosen_anime
+
+       	# Save choosen anime name
+        cat "$tmp_anime_titles_list" | sed -n "$choosen_anime"p > "$tmp_selected_anime_path"
+
+       	# Save choosen anime number
+        echo "$choosen_anime" >> "$tmp_anime_list"
+
+       	# Save utilized anime provider
+        echo "betteranime" >> "$tmp_anime_list"
+}
+
+_animefire_choose_episode() {
+
 	# Reset number
-	number="0"
+	number=1
 
 	# Get links
-	choosen_anime="$(tail -n2 $tmp_animes_list | sed -n 1p)"
-	url="$(cat $tmp_animes_list | sed -n "$choosen_anime"p)"
-	anime_url="$(curl -s "$url"  |  grep -Eo "${animefire_url}.{5}/")"
-	anime_title="$(curl -s "$url" | grep -E "${animefire_url}.{5}/" | grep -Eo "Episódio .{1,3}")"
+	choosen_anime="$(tail -n2 $tmp_anime_list | sed -n 1p)"
+	url="$(cat $tmp_anime_list | sed -n "$choosen_anime"p)"
+	anime_url="$(curl -s "$url"  |  grep -Eo "$animefire_url.{5}/")"
+	anime_title="$(curl -s "$url" | grep -E "$animefire_url.{5}/" | grep -Eo "Episódio .{1,3}")"
 
 	# Fix anime title
 	fixed_anime_title="$(sed 's/ /_/g' <<< "$anime_title")"
 	fixed_anime_title="$(sed 's/<//g' <<< "$fixed_anime_title")"
 
 	# Delete previous video list | so we can reutilize the old variables
-	[[ -f "$tmp_animes_list" ]] && rm "$tmp_animes_list"
+	[[ -f "$tmp_anime_list" ]] && rm "$tmp_anime_list"
 	[[ -f "$tmp_anime_titles_list" ]] && rm "$tmp_anime_titles_list"
 
 	# Store urls
 	for f in $anime_url; do
-		# Store animes
-		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_animes_list"
+		# Store anime
+		[[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_list"
 
 		# Increase number
 		[[ "$f" != "$prev" ]] && number="$((number + 1))"
@@ -206,7 +293,7 @@ _animefire_choose_episode() {
 	done
 
 	# Reset number
-	number="1"
+	number=1
 
 	# Title
 	echo "Episodes:"
@@ -230,24 +317,82 @@ _animefire_choose_episode() {
 	done
 
 	# Reset number
-	number="1"
+	number=1
+}
+
+_better_anime_choose_episode() {
+
+       	# Reset number
+        number=1
+
+       	# Get links
+        choosen_anime="$(tail -n2 $tmp_anime_list | sed -n 1p)"
+        url="$(cat $tmp_anime_list | sed -n "$choosen_anime"p)"
+        anime_url="$(curl -s "$url"  |  grep -Eo "$animefire_url.{5}/")"
+        anime_title="$(curl -s "$url" | grep -E "$animefire_url.{5}/" | grep -Eo "Episódio .{1,3}")"
+
+       	# Fix anime title
+        fixed_anime_title="$(sed 's/ /_/g' <<< "$anime_title")"
+        fixed_anime_title="$(sed 's/<//g' <<< "$fixed_anime_title")"
+
+       	# Delete previous video list | so we can reutilize the old variables
+        [[ -f "$tmp_anime_list" ]] && rm "$tmp_anime_list"
+        [[ -f "$tmp_anime_titles_list" ]] && rm "$tmp_anime_titles_list"
+
+       	# Store urls
+        for f in $anime_url; do
+                # Store anime
+                [[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_list"
+
+                # Increase number
+                [[ "$f" != "$prev" ]] && number="$((number + 1))"
+
+                # Set current link as previous
+                prev="$f"
+        done
+    	# Reset number
+        number=1
+
+       	# Title
+        echo "Episodes:"
+
+       	# Store titles
+        for f in $fixed_anime_title; do
+                # Substitute _ with space
+                f="$(sed 's/_/ /g' <<< "$f")"
+
+                # Store anime titles
+                [[ "$f" != "$prev" ]] && echo "$f" >> "$tmp_anime_titles_list"
+
+                # Show episode list
+                [[ "$f" != "$prev" ]] && echo "$number - $f"
+
+                # Increase number
+                [[ "$f" != "$prev" ]] && number="$((number + 1))"
+
+                # Set previous
+                prev="$f"
+        done
 }
 
 # Search mode
-case $search_mode in
-	*"_youtube:"*) 
+case "$mode" in
+	*"_youtube:"*)
 		_youtube
 	;;
 	*"_anime:"*)
 		echo "Sites:"
-		echo "1 - Animefire (pt_BR)"
+		echo "1 - Animefire 	(pt_BR)"
+		echo "2 - BetterAnime	(pt_BR)"
 		echo ""
 		echo "Enter your choice:"
 		read -r provider
 
 		[[ "$provider" -eq "1" ]] && _animefire_search_anime
+		[[ "$provider" -eq "2" ]] && _better_anime_search_anime
 	;;
 	*"_choose_anime_episode"*)
-		[[ $(tail -n 1 "$tmp_animes_list") == "animefire" ]] && _animefire_choose_episode
+		[[ $(tail -n 1 "$tmp_anime_list") == "animefire" ]] && _animefire_choose_episode
+		[[ $(tail -n 2 "$tmp_anime_list") == "betteranime" ]] && _better_anime_choose_episode
 	;;
 esac
