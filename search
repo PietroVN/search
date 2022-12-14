@@ -37,6 +37,8 @@ _max_videos() {
 }
 
 _cleanup() {
+	[[ -f "$tmp_video_list" ]] && rm "$tmp_video_list"
+	[[ -f "$tmp_video_titles_list" ]] && "$tmp_video_titles_list"
 	[[ -f "$tmp_anime_list" ]] && rm "$tmp_anime_list"
 	[[ -f "$tmp_anime_titles_list" ]] && rm "$tmp_anime_titles_list"
 }
@@ -77,7 +79,7 @@ _youtube() {
 		prev="$f"
 
 		# Break
-		[[ "$number" -gt "$max_videos" ]] && break
+		[[ "$number" -ge "$max_videos" ]] && break
 	done
 
 	# Reset number
@@ -101,7 +103,7 @@ _youtube() {
 		prev="$f"
 
 		# Break
-		[[ "$number" -gt "$max_videos" ]] && break
+		[[ "$number" -ge "$max_videos" ]] && break
 	done
 }
 
