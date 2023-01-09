@@ -61,6 +61,7 @@ _youtube() {
 	fixed_video_title="$(sed 's/<p dir=\"auto\">//g' <<< $video_title)"
 	fixed_video_title="$(sed 's/<*.b>//g' <<< $fixed_video_title)"
 	fixed_video_title="$(sed 's/<*.p>//g' <<< $fixed_video_title)"
+	fixed_video_title="$(sed 's/&#39;s//g' <<< $fixed_video_title)"
 	fixed_video_title="$(sed 's/ /_/g' <<< $fixed_video_title)"
 	fixed_video_title="$(sed 's/________________//g' <<< $fixed_video_title)"
 
